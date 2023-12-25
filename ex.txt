@@ -1,0 +1,220 @@
+CREATE TABLE positions
+(
+id INT PRIMARY KEY,
+name VARCHAR(100)
+);
+
+INSERT INTO positions VALUES
+(1,'Chief'),
+(2,'Senior'),
+(3,'Junior');
+
+CREATE TABLE barbers(
+id INT PRIMARY KEY,
+full_name VARCHAR(50),
+phone VARCHAR(20),
+email VARCHAR(50),
+birth_date DATE,
+hire_date DATE,
+position_id INT,
+FOREIGN KEY (position_id) REFERENCES positions(id)
+	);
+
+INSERT INTO barbers VALUES
+(1,'Anton Antonov','89091234567','anton@gmail.com','1999-12-01','2018-11-25',1),
+(2,'Bob Brown','89091234987','bob@gmail.com','1987-05-25','2017-03-10',2),
+(3,'Ann Annova','89091857697','ann@gmail.com','1991-06-19','2019-03-14',2),
+(4,'Julia Jull','89091231234','julia@gmail.com','1999-09-22','2020-09-11',3),
+(5,'Tom Ford','89091111534','tom@gmail.com','1995-08-12','2020-08-25',3);
+
+
+CREATE TABLE services
+(
+id INT primary key,
+name VARCHAR(50),
+price MONEY
+);
+
+INSERT INTO services VALUES
+(1,'Beard trim',10),
+(2,'Haircut',15),
+(3,'Mustash cut',5),
+(4,'Straight razor shaving',8),
+(5,'Gray camuffling',7),
+(6,'Haircut for children',10),
+(7,'Haircut by clipper',8);
+
+CREATE TABLE barber_service
+(
+barber_id INT,
+service_id INT,
+FOREIGN KEY (barber_id) REFERENCES barbers(id),
+FOREIGN KEY (service_id) REFERENCES services(id)
+);
+
+INSERT INTO barber_service VALUES
+(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(2,1),
+(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(3,1),(3,2),
+(3,4),(3,5),(3,6),(4,2),(4,5),(4,6),(4,7),(5,3),
+(5,5),(5,6),(5,7);
+	
+CREATE TABLE marks
+(
+id INT primary key,
+name VARCHAR(50)
+);
+	
+INSERT INTO marks VALUES
+(1,'Very bad'),
+(2,'Bad'),
+(3,'Fine'),
+(4,'Good'),
+(5,'Excellent');
+
+CREATE TABLE clients
+(
+id INT primary key,
+f_name VARCHAR(50),
+l_name VARCHAR(50),
+phone VARCHAR(20),
+email VARCHAR(50)
+);
+
+INSERT INTO clients VALUES
+(1,'A','A','89090987654','aaaa@gmail.com'),
+(2,'B','B','89096547854','bbbbb@gmail.com'),
+(3,'C','C','89091643345','cccc@yahoo.com'),
+(4,'D','D','89099874567','ddddd@gmail.com'),
+(5,'E','E','89091216569','eeee@gmail.com'),
+(6,'F','F','89093677432','fffff@yahoo.com'),
+(7,'G','G','8909O986334','gggggg@gmail.com'),
+(8,'X','X','89098909543','xxxx@gmail.com'),
+(9,'Y','Y','89092328909','yyyy@yahoo.com'),
+(10,'Z','Z','8909232578','zzzzzz@gmail.com');
+	
+CREATE TABLE feedbacks
+(
+id INT PRIMARY KEY,
+client_id INT,
+barber_id INT,
+description VARCHAR,
+mark_id INT,
+FOREIGN KEY (client_id) REFERENCES clients(id),
+FOREIGN KEY (barber_id) REFERENCES barbers(id),
+FOREIGN KEY (mark_id) REFERENCES marks(id)
+);
+
+INSERT INTO feedbacks VALUES
+(1,1,2,'Text',5),
+(2,3,1,'TextText',4),
+(3,5,3,N'TextTextTextTextText',4),
+(4,6,4,'TextText',5),
+(5,8,5,N'TextTextTextText',1),
+(6,2,3,'Text',2),
+(7,7,2,N'TextText',3),
+(8,4,5,'Text',4),
+(9,9,3,N'TextTextTextTextTextTextText',5),
+(10,10,4,'TextTextTextTextText',3);
+
+CREATE FUNCTION fio_barbers () RETURNS TABLE (full_name VARCHAR )
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT  barbers.full_name
+FROM barbers;
+
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT fio_barbers();
+drop function fio_barbers();
+
+
+
+CREATE FUNCTION info_barbers_senior () 
+RETURNS TABLE (full_name VARCHAR, phone VARCHAR, email VARCHAR, birth_date DATE, hire_date DATE, position_id INT)
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT  barbers.full_name, barbers.phone,  barbers.email,  barbers.birth_date,  barbers.hire_date,  barbers.position_id
+FROM barbers
+WHERE barbers.position_id = 2;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT info_barbers_senior();
+drop function info_barbers_barbers();
+
+
+CREATE FUNCTION beard_trim_id () 
+RETURNS TABLE (barber_id INT)
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT barber_service.barber_id
+FROM barber_service
+WHERE barber_service.service_id = 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT beard_trim_id();
+drop function beard_trim_id();
+
+
+
+CREATE FUNCTION count_senior () 
+RETURNS TABLE (barber_id BIGINT)
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT COUNT(position_id) 
+FROM barbers
+WHERE barbers.position_id = 2;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT count_senior();
+drop function count_senior();
+
+
+
+CREATE FUNCTION count_junior () 
+RETURNS TABLE (barber_id BIGINT)
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT COUNT(position_id) 
+FROM barbers
+WHERE barbers.position_id = 3;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT count_junior();
+drop function count_junior();
+
+
+
+CREATE FUNCTION years (year DATE) 
+RETURNS TABLE (full_name VARCHAR, phone VARCHAR, email VARCHAR, birth_date DATE, hire_date DATE, position_id INT)
+AS
+$$
+BEGIN
+RETURN QUERY
+SELECT barbers.full_name, barbers.phone,  barbers.email,  barbers.birth_date,  barbers.hire_date,  barbers.position_id
+FROM barbers
+WHERE barbers.hire_date  year;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT  years('2015-01-01');
+
+
+
+
+
+
